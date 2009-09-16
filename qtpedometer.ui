@@ -14,7 +14,7 @@
    <item row="0" column="0" >
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>3</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_3" >
       <attribute name="title" >
@@ -141,40 +141,6 @@
         </widget>
        </item>
        <item row="1" column="0" >
-        <widget class="QLabel" name="label_9" >
-         <property name="text" >
-          <string>EPH</string>
-         </property>
-         <property name="alignment" >
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1" >
-        <widget class="QLineEdit" name="eph" >
-         <property name="readOnly" >
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" >
-        <widget class="QLabel" name="label_8" >
-         <property name="text" >
-          <string>EPV</string>
-         </property>
-         <property name="alignment" >
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1" >
-        <widget class="QLineEdit" name="epv" >
-         <property name="readOnly" >
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0" >
         <widget class="QLabel" name="label_6" >
          <property name="text" >
           <string>Climb</string>
@@ -184,14 +150,14 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1" >
+       <item row="1" column="1" >
         <widget class="QLineEdit" name="climb" >
          <property name="readOnly" >
           <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="4" column="0" >
+       <item row="2" column="0" >
         <widget class="QLabel" name="label_10" >
          <property name="text" >
           <string>Track</string>
@@ -201,7 +167,7 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="1" >
+       <item row="2" column="1" >
         <widget class="QLineEdit" name="track" >
          <property name="readOnly" >
           <bool>true</bool>

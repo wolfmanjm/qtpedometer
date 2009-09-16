@@ -3,6 +3,8 @@
 
 #include <QMutex>
 #include <QTimer>
+#include <QWhereabouts>
+#include <QWhereaboutsFactory>
 
 #include "ui_qtpedometer.h"
 
@@ -14,7 +16,12 @@ class QtPedometer : public QWidget
 		QtPedometer(QWidget *parent = 0, Qt::WFlags f = 0);
 		virtual ~QtPedometer();
 
-		void init();
+	public slots:
+ 		void init();
+	
+	private slots:
+		void updated(const QWhereaboutsUpdate &update);
+		void stateChanged(QWhereabouts::State state);
 
 	protected:
 		void paintEvent(QPaintEvent *event);
@@ -25,11 +32,8 @@ class QtPedometer : public QWidget
 	private:
 		Ui::MainWindow ui;
 		QMutex mutex;
-
-		QString sentence;
-		time_t timer;	/* time of last state change */
-		int state;	/* or MODE_NO_FIX=1, MODE_2D=2, MODE_3D=3 */
 		bool hidden;
+		QWhereaboutsUpdate lastUpdate;
 };
 
 #endif

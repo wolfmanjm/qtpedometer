@@ -2,6 +2,7 @@ TEMPLATE=app
 TARGET=qtpedometer
 
 CONFIG+=qtopia
+QTOPIA*=whereabouts
 
 # I18n info
 STRING_LANGUAGE=en_US
