@@ -14,7 +14,7 @@
    <item row="0" column="0" >
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_3" >
       <attribute name="title" >
@@ -194,7 +194,11 @@
           </widget>
          </item>
          <item row="0" column="1" >
-          <widget class="QLineEdit" name="aveSpeed" />
+          <widget class="QLineEdit" name="aveSpeed" >
+           <property name="readOnly" >
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="1" column="0" >
           <widget class="QLabel" name="label_12" >
@@ -207,7 +211,11 @@
           </widget>
          </item>
          <item row="1" column="1" >
-          <widget class="QLineEdit" name="distance" />
+          <widget class="QLineEdit" name="distance" >
+           <property name="readOnly" >
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -271,11 +279,17 @@
       <layout class="QGridLayout" >
        <item row="0" column="0" >
         <widget class="QFrame" name="trackView" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="frameShape" >
           <enum>QFrame::StyledPanel</enum>
          </property>
          <property name="frameShadow" >
-          <enum>QFrame::Raised</enum>
+          <enum>QFrame::Plain</enum>
          </property>
         </widget>
        </item>

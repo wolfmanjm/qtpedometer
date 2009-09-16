@@ -10,3 +10,4 @@ unpack
 .obj
 .ui
 .uic
+.emacs.desktop

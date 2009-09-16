@@ -110,6 +110,8 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 
 	ui.time->setText(update.updateDateTime().toLocalTime().time().toString());
 
+	// TODO calculate average speed, and distance travelled
+
 	lastUpdate= update;
 }
 
