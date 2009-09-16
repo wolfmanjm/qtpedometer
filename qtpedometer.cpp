@@ -66,6 +66,10 @@ void QtPedometer::init()
 			SLOT(updated(QWhereaboutsUpdate)));
 	connect(whereabouts, SIGNAL(stateChanged(QWhereabouts::State)),
             SLOT(stateChanged(QWhereabouts::State)));
+
+	connect(ui.resetButton, SIGNAL(clicked()), this, SLOT(resetData()));
+	connect(ui.pauseButton, SIGNAL(clicked()), this, SLOT(pauseData()));
+	connect(ui.startButton, SIGNAL(clicked()), this, SLOT(startData()));
  	
 	whereabouts->startUpdates();
 
@@ -108,7 +112,7 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 		ui.climb->setText(QString::number(update.verticalSpeed() * MPS_TO_MPH, 'f', 3)); // convert to miles per hour
 	}
 
-	ui.time->setText(update.updateDateTime().toLocalTime().time().toString());
+	ui.time->setText(update.updateDateTime().toLocalTime().time().toString() + " " + update.updateDateTime().date().toString(Qt::ISODate));
 
 	// TODO calculate average speed, and distance travelled
 
@@ -117,9 +121,30 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 
 
 
+void QtPedometer::startData()
+{
+}
+
+void QtPedometer::pauseData()
+{
+}
+
+void QtPedometer::resetData()
+{
+	int ret= QMessageBox::question(this, tr("Tracking"),
+								   tr("Are you sure you want to reset the data?"),
+								   QMessageBox::Yes | QMessageBox::No);
+	if(ret == QMessageBox::Yes){
+		// reset the data
+		ui.aveSpeed->clear();
+		ui.distance->clear();
+	}
+
+}
+
+
 void QtPedometer::paintEvent(QPaintEvent *)
 {
-	qDebug("In paintEvent");
 }
 
 void QtPedometer::showEvent(QShowEvent *)
