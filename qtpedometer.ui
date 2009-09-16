@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>296</width>
-    <height>258</height>
+    <width>359</width>
+    <height>293</height>
    </rect>
   </property>
   <layout class="QGridLayout" >
    <item row="0" column="0" >
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab_3" >
       <attribute name="title" >
@@ -210,79 +210,101 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab" >
+     <widget class="QWidget" name="tab_5" >
       <attribute name="title" >
-       <string>Sat</string>
+       <string>Ped</string>
       </attribute>
       <layout class="QGridLayout" >
        <item row="0" column="0" >
-        <widget class="QTableWidget" name="satelliteList" >
-         <property name="verticalScrollBarPolicy" >
-          <enum>Qt::ScrollBarAsNeeded</enum>
+        <layout class="QGridLayout" >
+         <item row="0" column="0" >
+          <widget class="QLabel" name="label_11" >
+           <property name="text" >
+            <string>Ave Speed</string>
+           </property>
+           <property name="alignment" >
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" >
+          <widget class="QLineEdit" name="aveSpeed" />
+         </item>
+         <item row="1" column="0" >
+          <widget class="QLabel" name="label_12" >
+           <property name="text" >
+            <string>Distance</string>
+           </property>
+           <property name="alignment" >
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1" >
+          <widget class="QLineEdit" name="distance" />
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0" >
+        <layout class="QHBoxLayout" >
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="resetButton" >
+           <property name="text" >
+            <string>Reset</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pauseButton" >
+           <property name="text" >
+            <string>Pause</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="startButton" >
+           <property name="text" >
+            <string>Start</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="horizontalScrollBarPolicy" >
-          <enum>Qt::ScrollBarAsNeeded</enum>
+         <property name="sizeHint" >
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
          </property>
-         <property name="autoScroll" >
-          <bool>false</bool>
-         </property>
-         <property name="alternatingRowColors" >
-          <bool>true</bool>
-         </property>
-         <property name="selectionMode" >
-          <enum>QAbstractItemView::NoSelection</enum>
-         </property>
-         <property name="showGrid" >
-          <bool>false</bool>
-         </property>
-         <property name="gridStyle" >
-          <enum>Qt::NoPen</enum>
-         </property>
-         <property name="wordWrap" >
-          <bool>false</bool>
-         </property>
-         <property name="cornerButtonEnabled" >
-          <bool>false</bool>
-         </property>
-         <property name="rowCount" >
-          <number>0</number>
-         </property>
-         <column>
-          <property name="text" >
-           <string>PRN</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Elev</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Azim</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>SNR</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Used</string>
-          </property>
-         </column>
-        </widget>
+        </spacer>
        </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_2" >
       <attribute name="title" >
-       <string>Sky</string>
+       <string>Track</string>
       </attribute>
       <layout class="QGridLayout" >
        <item row="0" column="0" >
-        <widget class="QFrame" name="skyView" >
+        <widget class="QFrame" name="trackView" >
          <property name="frameShape" >
           <enum>QFrame::StyledPanel</enum>
          </property>
