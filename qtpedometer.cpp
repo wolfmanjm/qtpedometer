@@ -174,14 +174,18 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 		calculateTrip(update);
 	}
 
-	if(update.dataValidityFlags() & QWhereaboutsUpdate::HorizontalAccuracy)
+	if(update.dataValidityFlags() & QWhereaboutsUpdate::HorizontalAccuracy){
+		horiz_accuracy=  update.horizontalAccuracy();
 		qDebug("Horizontal Accuracy: %10.6f\n", update.horizontalAccuracy() * METERS_TO_FEET);
+	}
 
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::VerticalAccuracy)
 		qDebug("Vertical Accuracy:  %10.6f\n", update.verticalAccuracy() * METERS_TO_FEET);
 
-	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeedAccuracy)
+	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeedAccuracy){
+		speed_accuracy=  update.groundSpeedAccuracy();
 		qDebug("Ground Speed Accuracy:  %10.6f\n", update.groundSpeedAccuracy() * MPS_TO_MPH);
+	}
 
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::VerticalSpeedAccuracy)
 		qDebug("Vertical Speed Accuracy:  %10.6f\n", update.verticalSpeedAccuracy() * MPS_TO_MPH);
@@ -362,6 +366,8 @@ void QtPedometer::saveTrip()
 	out << "Elapsed time: " << ui.runningTime->text() << endl;
 	out << "Distance: " << ui.distance->text() << endl;
 	out << "Speed: " << ui.aveSpeed->text() << endl;
+	out << "Speed Accuracy: " << speed_accuracy << endl;
+	out << "Horiz Accuracy: " << horiz_accuracy << endl;
 	out << "=====================" << endl;
 
 	//QApplication::restoreOverrideCursor();

@@ -42,6 +42,7 @@ class QtPedometer : public QWidget
 		QTime running_time;
 		qreal distance;
 		bool running;
+		qreal horiz_accuracy, speed_accuracy;
 };
 
 #endif
