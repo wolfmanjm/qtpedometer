@@ -112,6 +112,7 @@ void QtPedometer::stateChanged(QWhereabouts::State state)
 			ui.status->setText("Waiting for fix");
 			break;
         case QWhereabouts::PositionFixAcquired:
+			qDebug("got fix");
 			ui.status->setText("Fix Acquired");
             break;
         default:
@@ -144,23 +145,9 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 
 	ui.time->setText(update.updateDateTime().toLocalTime().time().toString() + " " + update.updateDateTime().date().toString(Qt::ISODate));
 
-	// calculate average speed, and distance travelled for every 10'th update
+	// calculate average speed, and distance travelled
 	if(running){
-		char str[16];
-		int ms= running_time.elapsed();
-		int hrs= ((ms/1000)/60)/60;
-		int mins= ((ms/1000)/60) % 60;
-		int secs= (ms/1000) % 60;
-		snprintf(str, sizeof(str), "%02d:%02d:%02d", hrs, mins, secs);
-		ui.runningTime->setText(str);
-
-		if(update_count >= 10){
-			calculateAverages(update.coordinate());
-			update_count= 0;
-			valid_update= true;
-			last_update= update;
-		}else
-			update_count++;
+		calculateTrip(update);
 	}
 
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::HorizontalAccuracy)
@@ -183,19 +170,63 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 
 }
 
-void QtPedometer::calculateAverages(const QWhereaboutsCoordinate &current_position)
+// works out the Trip values
+void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 {
-	int ms= running_time.elapsed();
 
-	if(!valid_update)
+	// display trip time
+	char str[16];
+	int ms= running_time.elapsed();
+	int hrs= ((ms/1000)/60)/60;
+	int mins= ((ms/1000)/60) % 60;
+	int secs= (ms/1000) % 60;
+	snprintf(str, sizeof(str), "%02d:%02d:%02d", hrs, mins, secs);
+	ui.runningTime->setText(str);
+
+	// calculate trip distance covered
+	// I read that this may be more accurate, get the speed calculated
+	// from the GPS, and use it to determine the speed
+	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed){
+		// get measured speed
+		qreal speed= update.groundSpeed();
+		qDebug("speed= %10.6f m/s", speed);
+		// get elapsed time
+		QTime t= update.updateTime();
+		if(valid_update){
+			// calculate distance travelled
+			QTime last= last_update.updateTime();
+			int delta= last.msecsTo(t);
+			qDebug("delta= %d ms", delta);
+			qreal d= speed * (delta/1000.0);
+			distance += d;
+			qDebug("distance: %10.6f, %10.6f", d, distance);
+		}else{
+			valid_update= true;
+		}
+		last_update= update;
+	}
+
+#if 0
+	// Old way of doing it, too inaccurate
+	const QWhereaboutsCoordinate &current_position= update.coordinate();
+	// for averages we just use every tenth update
+	if(update_count < 10){
+		update_count++;
 		return;
+	}else{
+		update_count= 0;
+		valid_update= true;
+		last_update= update;
+	}
 
 	// use simple minded approach for now, take the length of each 10 second leg and accumulate it
-	// TODO will need to smooth out data and ignore ones that are out of whack
-	
+	// NOTE this is very inaccurate accumulkated error is enormous
 	qreal d= last_update.coordinate().distanceTo(current_position);
 	distance += d; // in meters
 	qDebug("distance= %10.6f, acc= %10.6f", d, distance);
+#endif
+
+   
 
 	// display in miles, feet
 	double feet= distance * METERS_TO_FEET;
@@ -205,7 +236,7 @@ void QtPedometer::calculateAverages(const QWhereaboutsCoordinate &current_positi
 	}else{
 		double imiles;
 		double ffeet= modf(miles, &imiles) / FEET_TO_MILES;
-		ui.distance->setText(QString::number(imiles, 'f', 0) + "m " + QString::number(ffeet, 'f', 1));
+		ui.distance->setText(QString::number(imiles, 'f', 0) + "mi " + QString::number(ffeet, 'f', 1) + "ft");
 	}
 	
 	// calculate average speed which is total distance covered divided by running_time

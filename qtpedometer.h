@@ -31,7 +31,7 @@ class QtPedometer : public QWidget
 
 	private:
  		void init();
-		void calculateAverages(const QWhereaboutsCoordinate &);
+		void calculateTrip(const QWhereaboutsUpdate &);
 
 		Ui::MainWindow ui;
 		QMutex mutex;
