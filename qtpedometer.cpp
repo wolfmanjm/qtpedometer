@@ -14,6 +14,7 @@
 #include <QtDebug>
 #include <QNmeaWhereabouts>
 #include <QCloseEvent>
+#include <QTextStream>
 
 #include "qtpedometer.h"
 #include <math.h>
@@ -51,10 +52,10 @@ void QtPedometer::createMenus()
     QMenu *contextMenu;
     contextMenu = QSoftMenuBar::menuFor(this);
 
-    QAction *openAct= new QAction(tr("Pause"), this);
-    connect(openAct, SIGNAL(triggered()), this, SLOT(pause()));
-	contextMenu->addAction(openAct);
-    contextMenu->addSeparator();
+    QAction *saveAct= new QAction(tr("Save Trip..."), this);
+    connect(saveAct, SIGNAL(triggered()), this, SLOT(saveTrip()));
+	contextMenu->addAction(saveAct);
+    //contextMenu->addSeparator();
 }
 
 void QtPedometer::init()
@@ -74,6 +75,7 @@ void QtPedometer::init()
 
 	
 	if(plugin.size() > 0){
+		// use a simulation for testing purposes, reads NMEA data from the given file
 		if(plugin == "sim"){
 			QString fn= "/root/nmea_sample.txt";
 			if(QApplication::arguments().size() > 2){
@@ -88,6 +90,7 @@ void QtPedometer::init()
 			wa->setSourceDevice(sampleFile);
 			whereabouts= wa;
 		}else{
+			// Use gpsd to the given host (gpsd must be started)
 			QString host= "";
 			if(QApplication::arguments().size() > 2){
 				host= QApplication::arguments().at(2);
@@ -96,6 +99,7 @@ void QtPedometer::init()
 			whereabouts= QWhereaboutsFactory::create(plugin, host);
 		}
 	} else
+		// use the default device, which is a custom plugin on FR qith Qtmoko
 		whereabouts= QWhereaboutsFactory::create();
 
 	if (whereabouts == NULL) {
@@ -330,4 +334,37 @@ void QtPedometer::closeEvent(QCloseEvent *event)
     } else {
         event->ignore();
     }
+}
+
+void QtPedometer::saveTrip()
+{
+	if(ui.runningTime->text().isEmpty()){
+		QMessageBox::warning(this, tr("Trip"), tr("Nothing to save."));
+		return;
+	}
+	
+	// TODO need to put this is a configurations screen
+	QString fileName = "/media/card/trip.txt";
+	QFile file(fileName);
+	if (!file.open(QFile::WriteOnly | QFile::Text | QFile::Append)) {
+		QMessageBox::warning(this, tr("Pedometer"),
+							 tr("Cannot write file %1:\n%2.")
+							 .arg(fileName)
+							 .arg(file.errorString()));
+		return;
+	}
+
+	QDateTime now= QDateTime::currentDateTime();
+	QTextStream out(&file);
+	//QApplication::setOverrideCursor(Qt::WaitCursor);
+	out << "Comment: " << ui.tripComment->text() << endl;
+	out << "Date: " << now.toString(Qt::ISODate) << endl;
+	out << "Elapsed time: " << ui.runningTime->text() << endl;
+	out << "Distance: " << ui.distance->text() << endl;
+	out << "Speed: " << ui.aveSpeed->text() << endl;
+	out << "=====================" << endl;
+
+	//QApplication::restoreOverrideCursor();
+
+	return;
 }

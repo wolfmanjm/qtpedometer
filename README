@@ -18,4 +18,6 @@ TODO
 ====
 Display track
 Have a go back mode where it will show you the way back. (ie basic compass).
-Save trip data
+Make trip data file configurable (currently hard coded to /media/card/trip.txt
+Select US or EURO (mph, miles/ft vs mps, meters).
+

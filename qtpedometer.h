@@ -1,8 +1,6 @@
 #ifndef QTPEDOMETER_H
 #define QTPEDOMETER_H
 
-#include <QMutex>
-#include <QTimer>
 #include <QWhereabouts>
 #include <QWhereaboutsFactory>
 
@@ -22,6 +20,7 @@ class QtPedometer : public QWidget
 		void resetData();
 		void startData();
 		void pauseData();
+		void saveTrip();
 
 	protected:
 		void paintEvent(QPaintEvent *event);
@@ -35,7 +34,6 @@ class QtPedometer : public QWidget
 		void createMenus();
 
 		Ui::MainWindow ui;
-		QMutex mutex;
 		bool hidden;
 		QWhereaboutsUpdate last_update;
 		QWhereabouts *whereabouts;
