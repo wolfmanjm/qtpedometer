@@ -178,7 +178,7 @@
      </widget>
      <widget class="QWidget" name="tab_5" >
       <attribute name="title" >
-       <string>Ped</string>
+       <string>Trip</string>
       </attribute>
       <layout class="QGridLayout" >
        <item row="0" column="0" >

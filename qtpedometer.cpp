@@ -266,8 +266,8 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 
 void QtPedometer::startData()
 {
-	int ret= QMessageBox::question(this, tr("Tracking"),
-								   tr("Are you sure you want to start the data?"),
+	int ret= QMessageBox::question(this, tr("Trip"),
+								   tr("Are you sure you want to start the trip?"),
 								   QMessageBox::Yes | QMessageBox::No);
 	if(ret == QMessageBox::Yes){
 		valid_update= false;
@@ -285,8 +285,8 @@ void QtPedometer::pauseData()
 
 void QtPedometer::resetData()
 {
-	int ret= QMessageBox::question(this, tr("Tracking"),
-								   tr("Are you sure you want to reset the data?"),
+	int ret= QMessageBox::question(this, tr("Trip"),
+								   tr("Are you sure you want to reset the trip?"),
 								   QMessageBox::Yes | QMessageBox::No);
 	if(ret == QMessageBox::Yes){
 		// reset the data
