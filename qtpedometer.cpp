@@ -61,6 +61,9 @@ void QtPedometer::init()
 {
 	qDebug("In QtPedometer:init()");
 
+	ui.startButton->setDisabled(true);
+	ui.pauseButton->setDisabled(true);
+
 	// setup gps plugin, can be "gpsd" or use the default
 	QString plugin;
 	if(QApplication::arguments().size() > 1){
@@ -129,6 +132,8 @@ void QtPedometer::stateChanged(QWhereabouts::State state)
         case QWhereabouts::PositionFixAcquired:
 			qDebug("got fix");
 			ui.status->setText("Fix Acquired");
+			ui.startButton->setDisabled(false);
+			ui.pauseButton->setDisabled(false);
             break;
         default:
 			ui.status->setText("Unknown Status");
@@ -275,6 +280,7 @@ void QtPedometer::startData()
 void QtPedometer::pauseData()
 {
 	running= !running;
+	ui.pauseButton->setText(running ? "Pause" : "Resume");
 }
 
 void QtPedometer::resetData()
