@@ -16,9 +16,6 @@ class QtPedometer : public QWidget
 		QtPedometer(QWidget *parent = 0, Qt::WFlags f = 0);
 		virtual ~QtPedometer();
 
-	public slots:
- 		void init();
-	
 	private slots:
 		void updated(const QWhereaboutsUpdate &update);
 		void stateChanged(QWhereabouts::State state);
@@ -33,10 +30,19 @@ class QtPedometer : public QWidget
 		void closeEvent (QCloseEvent *) ;
 
 	private:
+ 		void init();
+		void calculateAverages(const QWhereaboutsCoordinate &);
+
 		Ui::MainWindow ui;
 		QMutex mutex;
 		bool hidden;
-		QWhereaboutsUpdate lastUpdate;
+		QWhereaboutsUpdate last_update;
+		QWhereabouts *whereabouts;
+		int update_count;
+		bool valid_update;
+		QTime running_time;
+		qreal distance;
+		bool running;
 };
 
 #endif
