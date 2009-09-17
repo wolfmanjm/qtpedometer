@@ -5,7 +5,6 @@ It compiles and will show basic position and speed data fro the GPS.
 
 TODO
 ====
-Calculate average speed and distance since reset
 Display track
 Have a go back mode where it will show you the way back. (ie basic compass).
 
