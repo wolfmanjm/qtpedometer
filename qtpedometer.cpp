@@ -4,13 +4,16 @@
 #include <QAction>
 #include <QMenu>
 #include <QtopiaApplication>
+#include <QSoftMenuBar>
 #else
 #include <QApplication>
 #endif
 
+
 #include <QMessageBox>
 #include <QtDebug>
 #include <QNmeaWhereabouts>
+#include <QCloseEvent>
 
 #include "qtpedometer.h"
 #include <math.h>
@@ -34,12 +37,24 @@ QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 	whereabouts= NULL;
 	valid_update= false;
 	running= false;
+	createMenus();
 	init();
 }
 
 QtPedometer::~QtPedometer()
 {
 	qDebug("In ~QtPedometer()");
+}
+
+void QtPedometer::createMenus()
+{
+    QMenu *contextMenu;
+    contextMenu = QSoftMenuBar::menuFor(this);
+
+    QAction *openAct= new QAction(tr("Pause"), this);
+    connect(openAct, SIGNAL(triggered()), this, SLOT(pause()));
+	contextMenu->addAction(openAct);
+    contextMenu->addSeparator();
 }
 
 void QtPedometer::init()
@@ -259,6 +274,7 @@ void QtPedometer::startData()
 
 void QtPedometer::pauseData()
 {
+	running= !running;
 }
 
 void QtPedometer::resetData()
@@ -294,11 +310,18 @@ void QtPedometer::hideEvent(QHideEvent *)
 	hidden= true;
 }
 
-void QtPedometer::closeEvent (QCloseEvent *)
+void QtPedometer::closeEvent(QCloseEvent *event)
 {
 	qDebug("In close");
-	if(whereabouts == NULL){
-		whereabouts->stopUpdates();
-	}
-
+	int ret= QMessageBox::question(this, tr("Pedometer"),
+								   tr("Are you sure you want to exit?"),
+								   QMessageBox::Yes | QMessageBox::No);
+	if(ret == QMessageBox::Yes){
+		if(whereabouts == NULL){
+			whereabouts->stopUpdates();
+		}
+        event->accept();
+    } else {
+        event->ignore();
+    }
 }

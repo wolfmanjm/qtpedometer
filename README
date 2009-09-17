@@ -2,10 +2,17 @@ This is a GPS based pedometer, written for QTMoko but should work on
 any QTExtended platform.
 
 It compiles and will show basic position and speed data for the GPS.
-Also have simplistic trip data, like ave speed, trip time and trip distance
+Also have simplistic trip data, like ave speed, trip time and trip
+distance
 
-It turns out that the simplistic way of calculating distance travelled is way inaccurate.
-One suggestion I read is to take the speed returned from the GPS, and use that to calculate the distabce travelled for each sample. Sounds non-intuitive, but I'll give it a try.
+It turns out that the simplistic way of calculating distance travelled
+is way inaccurate.  One suggestion I read is to take the speed
+returned from the GPS, and use that to calculate the distabce
+travelled for each sample. Sounds non-intuitive, but I'll give it a
+try.
+
+Looks like it is much more accurate, and means I don;t have to mess
+with math to smooth out the points
 
 TODO
 ====

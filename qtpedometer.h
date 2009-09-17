@@ -27,11 +27,12 @@ class QtPedometer : public QWidget
 		void paintEvent(QPaintEvent *event);
 		void showEvent(QShowEvent *);
 		void hideEvent(QHideEvent *);
-		void closeEvent (QCloseEvent *) ;
+		void closeEvent(QCloseEvent *) ;
 
 	private:
  		void init();
 		void calculateTrip(const QWhereaboutsUpdate &);
+		void createMenus();
 
 		Ui::MainWindow ui;
 		QMutex mutex;
