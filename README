@@ -35,6 +35,12 @@ also
 
 will run in simulation mode reading the NMEA data from the given file path.
 
+In the menu check metric then speed is in meters per sec and distance
+is in meters (or Km) otherwise if not checked distabce is in miles or
+feet, and speed in Miles per Hour. This setting is saved. Default is
+not metric.
+
+
 TODO
 ====
 
@@ -44,4 +50,3 @@ Have a go back mode where it will show you the way back. (ie basic compass).
 
 Make trip data file configurable (currently hard coded to /media/card/trip.txt
 
-Select US or EURO (mph, miles/ft vs mps, meters).
