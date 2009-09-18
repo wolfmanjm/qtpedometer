@@ -31,6 +31,7 @@ QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 #ifdef Q_WS_QWS
 	setObjectName("Pedometer");
 	QtopiaApplication::setInputMethodHint(this, QtopiaApplication::AlwaysOff);
+	QtopiaApplication::setPowerConstraint(QtopiaApplication::DisableSuspend);
 	setWindowTitle(tr("Pedometer", "application header"));
 #endif
 	ui.setupUi(this);
@@ -47,6 +48,9 @@ QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 QtPedometer::~QtPedometer()
 {
 	qDebug("In ~QtPedometer()");
+#ifdef Q_WS_QWS
+	QtopiaApplication::setPowerConstraint(QtopiaApplication::Enable);
+#endif
 }
 
 void QtPedometer::createMenus()
