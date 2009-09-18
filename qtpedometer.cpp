@@ -27,7 +27,6 @@
 QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 {
 	qDebug("In QtPedometer()");
-	
 #ifdef Q_WS_QWS
 	setObjectName("Pedometer");
 	QtopiaApplication::setInputMethodHint(this, QtopiaApplication::AlwaysOff);
@@ -35,6 +34,13 @@ QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 	setWindowTitle(tr("Pedometer", "application header"));
 #endif
 	ui.setupUi(this);
+
+	// get settings
+	QSettings settings("e4Networks", "Pedometer");
+	use_metric= settings.value("metric", false).toBool();
+	setMetricUi();
+	speed_threshold= settings.value("threshold", 0.1788159993648455703).toDouble();
+
 	hidden= true;
 	update_count= 0;
 	whereabouts= NULL;
@@ -58,16 +64,39 @@ void QtPedometer::createMenus()
     QMenu *contextMenu;
     contextMenu = QSoftMenuBar::menuFor(this);
 
-    QAction *saveAct= new QAction(tr("Save Trip..."), this);
+    QAction *saveAct= new QAction(tr("Save Trip"), this);
     connect(saveAct, SIGNAL(triggered()), this, SLOT(saveTrip()));
 	contextMenu->addAction(saveAct);
-    //contextMenu->addSeparator();
+    contextMenu->addSeparator();
+    metricAct= new QAction(tr("Metric"), this);
+	metricAct->setCheckable(true);
+	metricAct->setChecked(use_metric);
+    connect(metricAct, SIGNAL(triggered()), this, SLOT(setMetric()));
+	contextMenu->addAction(metricAct);
+}
+
+// action caused by checking the Menu item
+void QtPedometer::setMetric()
+{
+	use_metric= metricAct->isChecked();
+	qDebug("set use metric to: %s", use_metric?"true":"false");
+	QSettings settings("e4Networks", "Pedometer");
+	settings.setValue("metric", use_metric);
+	setMetricUi();
+}
+
+// called to sync up all Ui elements relating to metric
+void QtPedometer::setMetricUi()
+{
+	ui.feetButton->setText(use_metric ? "m" : "ft");
+	ui.wayMilesCheck->setText(use_metric ? "Km" : "miles");
 }
 
 void QtPedometer::init()
 {
 	qDebug("In QtPedometer:init()");
 
+	// sync up UI
 	ui.startButton->setDisabled(true);
 	ui.pauseButton->setDisabled(true);
 
@@ -167,15 +196,27 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 	ui.latitude->setText(list.at(0));
 	ui.longitude->setText(list.at(1));
 
-	if(update.coordinate().type() == QWhereaboutsCoordinate::Coordinate3D)
-		ui.altitude->setText(QString::number(update.coordinate().altitude() * METERS_TO_FEET, 'f', 3) + " ft"); // convert to feet
+	if(update.coordinate().type() == QWhereaboutsCoordinate::Coordinate3D){
+		if(use_metric)
+			ui.altitude->setText(QString::number(update.coordinate().altitude(), 'f', 3) + " m");
+		else
+			ui.altitude->setText(QString::number(update.coordinate().altitude() * METERS_TO_FEET, 'f', 3) + " ft"); // convert to feet
+	}
 
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::Course)
 		ui.track->setText(QString::number(update.course(), 'f', 2) + QChar(0x00B0));   // degrees symbol
-	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed)
-		ui.speed->setText(QString::number(update.groundSpeed() * MPS_TO_MPH, 'f', 3) + " mph"); // convert to miles per hour
-	if(update.dataValidityFlags() & QWhereaboutsUpdate::VerticalSpeed)
-		ui.climb->setText(QString::number(update.verticalSpeed() * MPS_TO_MPH, 'f', 3)); // convert to miles per hour
+	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed){
+		if(use_metric)
+			ui.speed->setText(QString::number(update.groundSpeed(), 'f', 3) + " m/s");
+		else
+			ui.speed->setText(QString::number(update.groundSpeed() * MPS_TO_MPH, 'f', 3) + " mph"); // convert to miles per hour
+	}
+	if(update.dataValidityFlags() & QWhereaboutsUpdate::VerticalSpeed){
+		if(use_metric)
+			ui.climb->setText(QString::number(update.verticalSpeed(), 'f', 3) + " m/s");
+		else
+			ui.climb->setText(QString::number(update.verticalSpeed() * MPS_TO_MPH, 'f', 3) + " mph"); // convert to miles per hour
+	}
 
 	ui.time->setText(update.updateDateTime().toLocalTime().time().toString() + " " + update.updateDateTime().date().toString(Qt::ISODate));
 
@@ -191,26 +232,25 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 	// mostly for debugging
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::HorizontalAccuracy){
 		horiz_accuracy=  update.horizontalAccuracy();
-		qDebug("Horizontal Accuracy: %10.6f\n", update.horizontalAccuracy() * METERS_TO_FEET);
+		qDebug("Horizontal Accuracy: %10.6f", update.horizontalAccuracy());
 	}
 
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::VerticalAccuracy)
-		qDebug("Vertical Accuracy:  %10.6f\n", update.verticalAccuracy() * METERS_TO_FEET);
-
+		qDebug("Vertical Accuracy:  %10.6f", update.verticalAccuracy());
+	
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeedAccuracy){
 		speed_accuracy=  update.groundSpeedAccuracy();
-		qDebug("Ground Speed Accuracy:  %10.6f\n", update.groundSpeedAccuracy() * MPS_TO_MPH);
+		qDebug("Ground Speed Accuracy:  %10.6f m/s", update.groundSpeedAccuracy());
 	}
-
+	
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::VerticalSpeedAccuracy)
-		qDebug("Vertical Speed Accuracy:  %10.6f\n", update.verticalSpeedAccuracy() * MPS_TO_MPH);
-
+		qDebug("Vertical Speed Accuracy:  %10.6f m/s", update.verticalSpeedAccuracy());
+	
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::CourseAccuracy)
-		qDebug("Course Accuracy:  %10.6f\n", update.courseAccuracy());
-
+		qDebug("Course Accuracy:  %10.6f", update.courseAccuracy());
+	
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::UpdateTimeAccuracy)
-		qDebug("Time Accuracy:  %10.6f\n", update.updateTimeAccuracy());
-
+		qDebug("Time Accuracy:  %10.6f", update.updateTimeAccuracy());
 }
 
 // works out the Trip values
@@ -288,18 +328,21 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 	}
 #else
 	if(ui.feetButton->isChecked()){
-		// display decimal feet
-		qreal feet= distance * METERS_TO_FEET;
-		ui.distance->setText(QString::number(feet, 'f', 1) + " ft");		
+		// display decimal meters or feet
+		qreal d= distance * (use_metric ? 1.0 : METERS_TO_FEET);
+		ui.distance->setText(QString::number(d, 'f', 1) + (use_metric ? " m" : " ft"));		
 	}else{
-		// display decimal miles
-		qreal miles= distance * METERS_TO_MILES;
-		ui.distance->setText(QString::number(miles, 'f', 4) + " mi");
+		// display decimal Km or miles
+		qreal d= distance * (use_metric ? 0.001 : METERS_TO_MILES);
+		ui.distance->setText(QString::number(d, 'f', 4) + (use_metric ? " Km" : " mi"));
 	}
 #endif
 	// calculate average speed which is total distance covered divided by running_time
 	qreal speed= distance / (ms/1000.0); // gets meters per sec
-	ui.aveSpeed->setText(QString::number(speed * MPS_TO_MPH, 'f', 3) + " mph");
+	if(use_metric)
+		ui.aveSpeed->setText(QString::number(speed, 'f', 3) + " m/s");
+	else
+		ui.aveSpeed->setText(QString::number(speed * MPS_TO_MPH, 'f', 3) + " mph");
 }
 
 void QtPedometer::startData()
@@ -445,13 +488,13 @@ void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
 	}
 
 	if(ui.wayMilesCheck->isChecked()){
-		// display decimal miles
-		qreal miles= distance * METERS_TO_MILES;
-		ui.wayPointDistance->setText(QString::number(miles, 'f', 4) + " mi");
+		// display decimal miles or Km
+		qreal m= distance * (use_metric ? 0.001 : METERS_TO_MILES);
+		ui.wayPointDistance->setText(QString::number(m, 'f', 4) + (use_metric ? " Km" : " mi"));
 	}else{
-		// display decimal feet
-		qreal feet= distance * METERS_TO_FEET;
-		ui.wayPointDistance->setText(QString::number(feet, 'f', 1) + " ft");		
+		// display decimal feet or meters
+		qreal feet= distance * (use_metric ? 1.0 : METERS_TO_FEET);
+		ui.wayPointDistance->setText(QString::number(feet, 'f', 1) + (use_metric ? " m" : " ft"));
 	}
 }
 

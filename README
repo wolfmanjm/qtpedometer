@@ -14,9 +14,26 @@ try.
 Looks like it is much more accurate, and means I don't have to mess
 with math to smooth out the points.
 However we need to set a threshold speed above which the trip distance is recorded.
+Tried setting a threshold but that seems to make it more inaccurate...
+
 
 Set a way point, then show straight line 2D or 3D distance from that
 point to the current postion
+
+turns off sleep mode while running.
+
+
+for debugging when you run from the command line you can add an argument...
+
+> qtpedometer gpsd [host:port]
+
+to use gpsd at the given host and port, the default is to use localhost
+
+also
+
+> qtpedometer sim [filepath]
+
+will run in simulation mode reading the NMEA data from the given file path.
 
 TODO
 ====
@@ -28,5 +45,3 @@ Have a go back mode where it will show you the way back. (ie basic compass).
 Make trip data file configurable (currently hard coded to /media/card/trip.txt
 
 Select US or EURO (mph, miles/ft vs mps, meters).
-
-turn off sleep mode if enabled while running
