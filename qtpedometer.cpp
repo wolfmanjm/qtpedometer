@@ -160,12 +160,12 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 	ui.longitude->setText(list.at(1));
 
 	if(update.coordinate().type() == QWhereaboutsCoordinate::Coordinate3D)
-		ui.altitude->setText(QString::number(update.coordinate().altitude() * METERS_TO_FEET, 'f', 3)); // convert to feet
+		ui.altitude->setText(QString::number(update.coordinate().altitude() * METERS_TO_FEET, 'f', 3) + " ft"); // convert to feet
 
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::Course)
 		ui.track->setText(QString::number(update.course(), 'f', 2) + QChar(0x00B0));   // degrees symbol
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed)
-		ui.speed->setText(QString::number(update.groundSpeed() * MPS_TO_MPH, 'f', 3)); // convert to miles per hour
+		ui.speed->setText(QString::number(update.groundSpeed() * MPS_TO_MPH, 'f', 3) + " mph"); // convert to miles per hour
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::VerticalSpeed)
 		ui.climb->setText(QString::number(update.verticalSpeed() * MPS_TO_MPH, 'f', 3)); // convert to miles per hour
 
@@ -275,9 +275,15 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 		ui.distance->setText(QString::number(imiles, 'f', 0) + "mi " + QString::number(ffeet, 'f', 1) + "ft");
 	}
 #else
-	// display decimal miles
-	qreal miles= distance * METERS_TO_MILES;
-	ui.distance->setText(QString::number(miles, 'f', 4) + " mi");
+	if(ui.feetButton->isChecked()){
+		// display decimal feet
+		qreal feet= distance * METERS_TO_FEET;
+		ui.distance->setText(QString::number(feet, 'f', 1) + " ft");		
+	}else{
+		// display decimal miles
+		qreal miles= distance * METERS_TO_MILES;
+		ui.distance->setText(QString::number(miles, 'f', 4) + " mi");
+	}
 #endif
 	// calculate average speed which is total distance covered divided by running_time
 	qreal speed= distance / (ms/1000.0); // gets meters per sec

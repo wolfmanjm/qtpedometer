@@ -14,7 +14,7 @@
    <item row="0" column="0" >
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_3" >
       <attribute name="title" >
@@ -135,6 +135,11 @@
        </item>
        <item row="0" column="1" >
         <widget class="QLineEdit" name="speed" >
+         <property name="font" >
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="readOnly" >
           <bool>true</bool>
          </property>
@@ -266,6 +271,16 @@
        </item>
        <item row="2" column="0" >
         <layout class="QHBoxLayout" >
+         <item>
+          <layout class="QVBoxLayout" />
+         </item>
+         <item>
+          <widget class="QCheckBox" name="feetButton" >
+           <property name="text" >
+            <string>feet</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <spacer>
            <property name="orientation" >
