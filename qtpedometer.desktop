@@ -1,10 +1,10 @@
 [Translation]
-File=qtgps-nct
-Context=qtgps
-
+File=qtpedometer-nct
+Context=qtpedometer
+ 
 [Desktop Entry]
-Comment[]=A GPS Test Program
-Exec=qtgps
-Icon=qtgps/Qtgps
+Comment[]=GPS based pedometer
+Exec=qtpedometer
 Type=Application
-Name[]=qtgps
+Name[]=QtPedometer
+ 
