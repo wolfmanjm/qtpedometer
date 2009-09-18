@@ -21,6 +21,8 @@ class QtPedometer : public QWidget
 		void startData();
 		void pauseData();
 		void saveTrip();
+		void setWayPoint();
+		void clearWayPoint();
 
 	protected:
 		void paintEvent(QPaintEvent *event);
@@ -31,11 +33,15 @@ class QtPedometer : public QWidget
 	private:
  		void init();
 		void calculateTrip(const QWhereaboutsUpdate &);
+		void calculateWayPoint(const QWhereaboutsUpdate &);
 		void createMenus();
+		qreal distance3d(const QWhereaboutsCoordinate& from, const QWhereaboutsCoordinate& to);
 
 		Ui::MainWindow ui;
 		bool hidden;
 		QWhereaboutsUpdate last_update;
+		QWhereaboutsUpdate current_update;
+		QWhereaboutsUpdate way_point;
 		QWhereabouts *whereabouts;
 		int update_count;
 		bool valid_update;

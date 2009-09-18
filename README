@@ -15,8 +15,12 @@ Looks like it is much more accurate, and means I don't have to mess
 with math to smooth out the points.
 However we need to set a threshold speed above which the trip distance is recorded.
 
+Set a way point, then show straight line 2D or 3D distance from that
+point to the current postion
+
 TODO
 ====
+
 Display track
 
 Have a go back mode where it will show you the way back. (ie basic compass).
@@ -24,20 +28,3 @@ Have a go back mode where it will show you the way back. (ie basic compass).
 Make trip data file configurable (currently hard coded to /media/card/trip.txt
 
 Select US or EURO (mph, miles/ft vs mps, meters).
-
-Set a way point, then show straight line 3D distance from that point using this formula...
-
-alt= current altitude * 6,370,000 // take into account center of earth
-// convert from lat, long, alt to cartesian coordinates
-x = alt * cos(lat) * sin(long)
-y = alt * sin(lat)
-z = alt * cos(lat) * cos(long)
-
-// then calculate distance between the two points
-dist = sqrt( (x1-x0)^2 + (y1-y0)^2 + (z1-z0)^2 )
-
-// convert degrees to radians
-rad = deg * 3.14159 / 180.0
-
-
-

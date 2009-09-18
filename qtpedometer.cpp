@@ -117,6 +117,8 @@ void QtPedometer::init()
 	connect(ui.resetButton, SIGNAL(clicked()), this, SLOT(resetData()));
 	connect(ui.pauseButton, SIGNAL(clicked()), this, SLOT(pauseData()));
 	connect(ui.startButton, SIGNAL(clicked()), this, SLOT(startData()));
+	connect(ui.setWaypoint, SIGNAL(clicked()), this, SLOT(setWayPoint()));
+	connect(ui.clearWaypoint, SIGNAL(clicked()), this, SLOT(clearWayPoint()));
  	
 	whereabouts->setUpdateInterval(1000); // update every second
 	whereabouts->startUpdates();
@@ -153,6 +155,8 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 		return;
 	}
 
+	current_update= update;
+
 	QString pos= update.coordinate().toString(QWhereaboutsCoordinate::DegreesMinutesSecondsWithHemisphere);
 	QStringList list= pos.split(",");
 
@@ -176,6 +180,11 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 		calculateTrip(update);
 	}
 
+	// if the way point is set then calculate and display the current distance to it
+	if(!way_point.isNull())
+		calculateWayPoint(update);
+
+	// mostly for debugging
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::HorizontalAccuracy){
 		horiz_accuracy=  update.horizontalAccuracy();
 		qDebug("Horizontal Accuracy: %10.6f\n", update.horizontalAccuracy() * METERS_TO_FEET);
@@ -203,7 +212,6 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 // works out the Trip values
 void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 {
-
 	// display trip time
 	char str[16];
 	int ms= running_time.elapsed();
@@ -396,4 +404,80 @@ void QtPedometer::saveTrip()
 	//QApplication::restoreOverrideCursor();
 
 	return;
+}
+
+// set the waypoint
+void QtPedometer::setWayPoint()
+{
+	QString pos= current_update.coordinate().toString(QWhereaboutsCoordinate::DegreesMinutesSecondsWithHemisphere);
+	QStringList list= pos.split(",");
+
+	ui.wayPtLatitude->setText(list.at(0));
+	ui.wayPtLongitude->setText(list.at(1));
+	way_point= current_update;
+}
+void QtPedometer::clearWayPoint()
+{
+	ui.wayPtLatitude->clear();
+	ui.wayPtLongitude->clear();
+	way_point.clear();
+}
+
+// This calcualtes and displays either the 2D distance or 3D distance
+// between the current position and the way point
+void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
+{
+	qreal distance= 0.0;
+	if(ui.twoDCheck->isChecked() 
+	   || update.coordinate().type() != QWhereaboutsCoordinate::Coordinate3D
+	   || way_point.coordinate().type() != QWhereaboutsCoordinate::Coordinate3D)
+	{
+		ui.twoDCheck->setChecked(true);
+		// calculate 2D distance ignoring altitude
+		distance= way_point.coordinate().distanceTo(update.coordinate());
+	}else{
+		// calculate 3D distance
+		distance= distance3d(way_point.coordinate(), update.coordinate());
+	}
+
+	if(ui.wayMilesCheck->isChecked()){
+		// display decimal miles
+		qreal miles= distance * METERS_TO_MILES;
+		ui.wayPointDistance->setText(QString::number(miles, 'f', 4) + " mi");
+	}else{
+		// display decimal feet
+		qreal feet= distance * METERS_TO_FEET;
+		ui.wayPointDistance->setText(QString::number(feet, 'f', 1) + " ft");		
+	}
+}
+
+#define PI 3.14159265
+#define DEG2RAD(deg) (deg * PI / 180.0)
+
+qreal QtPedometer::distance3d(const QWhereaboutsCoordinate& from, const QWhereaboutsCoordinate& to)
+{
+	// take into account center of earth
+	double alt1= from.altitude() * 6370000.0;
+	double alt2= to.altitude() * 6370000.0;
+
+	// convert degrees to radians
+	double lat1= DEG2RAD(from.latitude());
+	double long1= DEG2RAD(from.longitude());
+	double lat2= DEG2RAD(to.latitude());
+	double long2= DEG2RAD(to.longitude());
+
+	// convert from lat, long, alt to cartesian coordinates
+	double x0= alt1 * cos(lat1) * sin(long1);
+	double y0= alt1 * sin(lat1);
+	double z0= alt1 * cos(lat1) * cos(long1);
+
+	double x1= alt2 * cos(lat2) * sin(long2);
+	double y1= alt2 * sin(lat2);
+	double z1= alt2 * cos(lat2) * cos(long2);
+
+
+	// then calculate distance between the two points
+	double dist= sqrt( pow((x1-x0), 2) + pow((y1-y0), 2) + pow((z1-z0), 2) );
+
+	return (qreal)dist;
 }
