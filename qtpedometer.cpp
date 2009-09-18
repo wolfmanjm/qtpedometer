@@ -19,8 +19,9 @@
 #include "qtpedometer.h"
 #include <math.h>
 
-#define METERS_TO_FEET 3.2808399       /* Meters to U.S./British feet */
-#define MPS_TO_MPH 2.2369363           /* Meters/second to miles per hour */
+#define METERS_TO_FEET 3.2808399            /* Meters to U.S./British feet */
+#define METERS_TO_MILES 0.000621371192      /* Meters to U.S./British feet */
+#define MPS_TO_MPH 2.2369363                /* Meters/second to miles per hour */
 #define FEET_TO_MILES 0.000189393939
 
 QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
@@ -38,6 +39,7 @@ QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 	whereabouts= NULL;
 	valid_update= false;
 	running= false;
+	speed_threshold= 0.1788159993648455703; // MPS = 0.4 MPH
 	createMenus();
 	init();
 }
@@ -211,13 +213,19 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 	snprintf(str, sizeof(str), "%02d:%02d:%02d", hrs, mins, secs);
 	ui.runningTime->setText(str);
 
-	// calculate trip distance covered
-	// I read that this may be more accurate, get the speed calculated
-	// from the GPS, and use it to determine the speed
+	// calculate trip distance covered I read that this may be more
+	// accurate, get the speed calculated from the GPS, and use it to
+	// determine the distance covered since the last speed update
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed){
 		// get measured speed
 		qreal speed= update.groundSpeed();
 		qDebug("speed= %10.6f m/s", speed);
+
+		// if we are going less than the threshold then presume we are not moving
+		if(speed < speed_threshold){
+			speed= 0.0;
+		}
+
 		// get elapsed time
 		QTime t= update.updateTime();
 		if(valid_update){
@@ -255,8 +263,8 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 #endif
 
    
-
-	// display in miles, feet
+#if 0
+	// display in miles and feet if less than a mile otherwise in feet
 	double feet= distance * METERS_TO_FEET;
 	double miles= feet * FEET_TO_MILES;
 	if(miles < 1.0){
@@ -266,7 +274,11 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 		double ffeet= modf(miles, &imiles) / FEET_TO_MILES;
 		ui.distance->setText(QString::number(imiles, 'f', 0) + "mi " + QString::number(ffeet, 'f', 1) + "ft");
 	}
-	
+#else
+	// display decimal miles
+	qreal miles= distance * METERS_TO_MILES;
+	ui.distance->setText(QString::number(miles, 'f', 4) + " mi");
+#endif
 	// calculate average speed which is total distance covered divided by running_time
 	qreal speed= distance / (ms/1000.0); // gets meters per sec
 	ui.aveSpeed->setText(QString::number(speed * MPS_TO_MPH, 'f', 3) + " mph");
@@ -282,12 +294,16 @@ void QtPedometer::startData()
 		distance= 0.0;
 		running_time.start();
 		running= true;
+		ui.pauseButton->setText("Pause");
 	}
 }
 
 void QtPedometer::pauseData()
 {
 	running= !running;
+	if(!running){
+		valid_update= false;
+	}
 	ui.pauseButton->setText(running ? "Pause" : "Resume");
 }
 
@@ -303,6 +319,7 @@ void QtPedometer::resetData()
 		ui.runningTime->clear();
 		valid_update= false;
 		running= false;
+		ui.pauseButton->setText("Pause");
 	}
 
 }

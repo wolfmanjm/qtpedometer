@@ -43,6 +43,7 @@ class QtPedometer : public QWidget
 		qreal distance;
 		bool running;
 		qreal horiz_accuracy, speed_accuracy;
+		qreal speed_threshold;
 };
 
 #endif
