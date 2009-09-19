@@ -42,11 +42,11 @@ QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 	speed_threshold= settings.value("threshold", 0.1788159993648455703).toDouble();
 
 	hidden= true;
-	update_count= 0;
 	whereabouts= NULL;
 	valid_update= false;
 	running= false;
 	speed_threshold= 0.1788159993648455703; // MPS = 0.4 MPH
+	thresh_cnt= 0;
 	createMenus();
 	init();
 }
@@ -264,6 +264,7 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 	int secs= (ms/1000) % 60;
 	snprintf(str, sizeof(str), "%02d:%02d:%02d", hrs, mins, secs);
 	ui.runningTime->setText(str);
+	qDebug("Update time: %s", (const char *)update.updateTime().toString().toAscii());
 
 	// calculate trip distance covered I read that this may be more
 	// accurate, get the speed calculated from the GPS, and use it to
@@ -273,60 +274,41 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 		qreal speed= update.groundSpeed();
 		qDebug("speed= %10.6f m/s", speed);
 
-		// if we are going less than the threshold then presume we are not moving
+		bool valid_speed= true;
+		// if we are going less than the threshold for 10 consecutive
+		// samples then presume we are not moving
 		if(speed < speed_threshold){
-			speed= 0.0;
+			if(thresh_cnt++ > 10){
+				// we have been stationary for 10 samples so
+				// accumulate zero speed
+				speed= 0.0;
+			}else{
+				// don't update last_update so if we get a valid speed
+				// within 10 samples we accumulate it correctly
+				valid_speed= false;
+			}
+		}else
+			thresh_cnt= 0;
+
+		if(valid_speed){
+			// get elapsed time
+			QTime t= update.updateTime();
+			if(valid_update){
+				// calculate distance travelled
+				QTime last= last_update.updateTime();
+				int delta= last.msecsTo(t);
+				qDebug("delta= %d ms", delta);
+				qreal d= speed * (delta/1000.0);
+				distance += d;
+				qDebug("distance: %10.6f, %10.6f", d, distance);
+			}else{
+				valid_update= true;
+			}
+			last_update= update;
 		}
-
-		// get elapsed time
-		QTime t= update.updateTime();
-		if(valid_update){
-			// calculate distance travelled
-			QTime last= last_update.updateTime();
-			int delta= last.msecsTo(t);
-			qDebug("delta= %d ms", delta);
-			qreal d= speed * (delta/1000.0);
-			distance += d;
-			qDebug("distance: %10.6f, %10.6f", d, distance);
-		}else{
-			valid_update= true;
-		}
-		last_update= update;
 	}
 
-#if 0
-	// Old way of doing it, too inaccurate
-	const QWhereaboutsCoordinate &current_position= update.coordinate();
-	// for averages we just use every tenth update
-	if(update_count < 10){
-		update_count++;
-		return;
-	}else{
-		update_count= 0;
-		valid_update= true;
-		last_update= update;
-	}
-
-	// use simple minded approach for now, take the length of each 10 second leg and accumulate it
-	// NOTE this is very inaccurate accumulkated error is enormous
-	qreal d= last_update.coordinate().distanceTo(current_position);
-	distance += d; // in meters
-	qDebug("distance= %10.6f, acc= %10.6f", d, distance);
-#endif
-
-   
-#if 0
-	// display in miles and feet if less than a mile otherwise in feet
-	double feet= distance * METERS_TO_FEET;
-	double miles= feet * FEET_TO_MILES;
-	if(miles < 1.0){
-		ui.distance->setText(QString::number(feet, 'f', 1) + " ft"); // + ", " + QString::number(miles, 'f', 2) + " ml");
-	}else{
-		double imiles;
-		double ffeet= modf(miles, &imiles) / FEET_TO_MILES;
-		ui.distance->setText(QString::number(imiles, 'f', 0) + "mi " + QString::number(ffeet, 'f', 1) + "ft");
-	}
-#else
+	// display miles or feet, or meters or kilometers
 	if(ui.feetButton->isChecked()){
 		// display decimal meters or feet
 		qreal d= distance * (use_metric ? 1.0 : METERS_TO_FEET);
@@ -336,7 +318,7 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 		qreal d= distance * (use_metric ? 0.001 : METERS_TO_MILES);
 		ui.distance->setText(QString::number(d, 'f', 4) + (use_metric ? " Km" : " mi"));
 	}
-#endif
+
 	// calculate average speed which is total distance covered divided by running_time
 	qreal speed= distance / (ms/1000.0); // gets meters per sec
 	if(use_metric)

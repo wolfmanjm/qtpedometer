@@ -46,7 +46,7 @@ class QtPedometer : public QWidget
 		QWhereaboutsUpdate way_point;
 		QWhereabouts *whereabouts;
 		QAction *metricAct;
-		int update_count;
+		int thresh_cnt;
 		bool valid_update;
 		QTime running_time;
 		qreal distance;
