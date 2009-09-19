@@ -431,6 +431,8 @@ void QtPedometer::saveTrip()
 	out << "=====================" << endl;
 
 	//QApplication::restoreOverrideCursor();
+	
+	QMessageBox::information(this, tr("Trip"), tr("Saved."));
 
 	return;
 }
@@ -454,6 +456,7 @@ void QtPedometer::clearWayPoint()
 
 // This calcualtes and displays either the 2D distance or 3D distance
 // between the current position and the way point
+// It also calculates the direction to the waypoint form the current position
 void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
 {
 	qreal distance= 0.0;
@@ -478,6 +481,19 @@ void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
 		qreal feet= distance * (use_metric ? 1.0 : METERS_TO_FEET);
 		ui.wayPointDistance->setText(QString::number(feet, 'f', 1) + (use_metric ? " m" : " ft"));
 	}
+
+	// where is the way point?
+	qreal bearing= update.coordinate().azimuthTo(way_point.coordinate());
+	qDebug("bearing to waypoint= %6.2f", bearing);
+
+	// TODO Ok now we have the azimuth which is the number of degrees
+	// from north that the waypoint is, we have to figure out what
+	// direction that is from the direction we are heading. So take
+	// our current bearing, and give that the Green arrow on the
+	// display is pointing in the direction we are going the red arrow
+	// will be the directin we need to go...  bearing - azimuth =
+	// offset in degrees -ive is clockwise +ive is counter clockwise
+
 }
 
 #define PI 3.14159265
