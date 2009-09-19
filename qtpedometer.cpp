@@ -34,6 +34,7 @@ QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 	setWindowTitle(tr("Pedometer", "application header"));
 #endif
 	ui.setupUi(this);
+	compass= new Compass();
 
 	// get settings
 	QSettings settings("e4Networks", "Pedometer");
@@ -57,6 +58,7 @@ QtPedometer::~QtPedometer()
 #ifdef Q_WS_QWS
 	QtopiaApplication::setPowerConstraint(QtopiaApplication::Enable);
 #endif
+	delete compass;
 }
 
 void QtPedometer::createMenus()
@@ -95,6 +97,11 @@ void QtPedometer::setMetricUi()
 void QtPedometer::init()
 {
 	qDebug("In QtPedometer:init()");
+
+	// setup compass widget for drawing into
+	QVBoxLayout *vbox = new QVBoxLayout;
+	vbox->addWidget(compass);
+	ui.compassFrame->setLayout(vbox);
 
 	// sync up UI
 	ui.startButton->setDisabled(true);
@@ -483,8 +490,8 @@ void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
 	}
 
 	// where is the way point?
-	qreal bearing= update.coordinate().azimuthTo(way_point.coordinate());
-	qDebug("bearing to waypoint= %6.2f", bearing);
+	qreal az= update.coordinate().azimuthTo(way_point.coordinate());
+	qreal bearing= update.course();
 
 	// TODO Ok now we have the azimuth which is the number of degrees
 	// from north that the waypoint is, we have to figure out what
@@ -493,7 +500,9 @@ void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
 	// display is pointing in the direction we are going the red arrow
 	// will be the directin we need to go...  bearing - azimuth =
 	// offset in degrees -ive is clockwise +ive is counter clockwise
-
+	qreal pos= bearing - az;
+	if(pos < 0) pos += 360.0;
+	qDebug("azimuth of waypoint= %6.2fm bearing= %6.2f, pos= %6.2f", az, bearing, pos);
 }
 
 #define PI 3.14159265

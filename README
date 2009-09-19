@@ -50,3 +50,4 @@ Have a go back mode where it will show you the way back. (ie basic compass).
 
 Make trip data file configurable (currently hard coded to /media/card/trip.txt)
 
+OK Dialog  when resetting waypoint or resetting one

@@ -5,6 +5,7 @@
 #include <QWhereaboutsFactory>
 
 #include "ui_qtpedometer.h"
+#include "compass.h"
 
 class QtPedometer : public QWidget
 {
@@ -40,6 +41,8 @@ class QtPedometer : public QWidget
 		void setMetricUi();
 
 		Ui::MainWindow ui;
+		Compass *compass;
+
 		bool hidden;
 		QWhereaboutsUpdate last_update;
 		QWhereaboutsUpdate current_update;

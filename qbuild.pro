@@ -22,11 +22,13 @@ FORMS=\
     qtpedometer.ui
 
 HEADERS=\
-    qtpedometer.h
+    qtpedometer.h\
+    compass.h
 
 SOURCES=\
     main.cpp\
-    qtpedometer.cpp
+    qtpedometer.cpp\
+    compass.cpp
 
 # Install rules
 target [
