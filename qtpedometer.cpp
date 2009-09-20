@@ -451,6 +451,14 @@ void QtPedometer::saveTrip()
 // set the waypoint
 void QtPedometer::setWayPoint()
 {
+	if(!way_point.isNull()){
+		int ret= QMessageBox::question(this, tr("Way Point"),
+									   tr("Are you sure you want to reset the waypoint?"),
+									   QMessageBox::Yes | QMessageBox::No);
+		if(ret != QMessageBox::Yes)
+			return;
+	}
+
 	QString pos= current_update.coordinate().toString(QWhereaboutsCoordinate::DegreesMinutesSecondsWithHemisphere);
 	QStringList list= pos.split(",");
 
@@ -461,15 +469,20 @@ void QtPedometer::setWayPoint()
 }
 void QtPedometer::clearWayPoint()
 {
-	ui.wayPtLatitude->clear();
-	ui.wayPtLongitude->clear();
-	way_point.clear();
-	compass->showAzimuth(false);
+	int ret= QMessageBox::question(this, tr("Way Point"),
+								   tr("Are you sure you want to clear the waypoint?"),
+								   QMessageBox::Yes | QMessageBox::No);
+	if(ret == QMessageBox::Yes){
+		ui.wayPtLatitude->clear();
+		ui.wayPtLongitude->clear();
+		way_point.clear();
+		compass->showAzimuth(false);
+	}
 }
 
-// This calcualtes and displays either the 2D distance or 3D distance
+// This calculates and displays either the 2D distance or 3D distance
 // between the current position and the way point
-// It also calculates the direction to the waypoint form the current position
+// It also calculates the direction to the waypoint from the current position
 void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
 {
 	qreal distance= 0.0;

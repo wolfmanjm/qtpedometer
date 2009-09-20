@@ -40,6 +40,13 @@ is in meters (or Km) otherwise if not checked distabce is in miles or
 feet, and speed in Miles per Hour. This setting is saved. Default is
 not metric.
 
+Added a compass screen, this shows where north is based on the
+freerunner pointing in the direction of motion, the compass needle is
+red for north and green for south, you need to be moving for it to be
+accurate.  There is also a blue arrow when a waypoint is set, this
+shows the direction from north the waypoint is, if you are moving and
+follow the blue arrow you may eventually reach the waypoint. This is
+useful for finding your car :)
 
 TODO
 ====
@@ -50,4 +57,4 @@ Have a go back mode where it will show you the way back. (ie basic compass).
 
 Make trip data file configurable (currently hard coded to /media/card/trip.txt)
 
-OK Dialog  when resetting waypoint or resetting one
+Have an idication in compass window of whether it is accurate or not.
