@@ -51,10 +51,8 @@ useful for finding your car :)
 TODO
 ====
 
-Display track
-
-Have a go back mode where it will show you the way back. (ie basic compass).
-
 Make trip data file configurable (currently hard coded to /media/card/trip.txt)
 
-Have an idication in compass window of whether it is accurate or not.
+Have an indication in compass window of whether it is accurate or not.
+
+Store waypoint so you can suspend, then restore and find your car.

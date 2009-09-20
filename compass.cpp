@@ -47,9 +47,25 @@ void Compass::paintEvent(QPaintEvent *)
 		QPoint(0, -70)
 	};
 
-	QColor northColor(127, 0, 0);
-	QColor southColor(0, 127, 0);
-	QColor azimuthColor(0, 0, 127, 191);
+	// A nice vector arrow found online
+	static const QPoint directionPointer[12] = {
+		QPoint(-14, 30),
+		QPoint(-5, 38),
+		QPoint(0, 46),
+		QPoint(5, 38),
+		QPoint(14, 30),
+		QPoint(4, 34),
+		QPoint(4, -36),
+		QPoint(14,-46),
+		QPoint(0, -40),
+		QPoint(-14, -46),
+		QPoint(-4,-36),
+		QPoint(-4, 34)
+	};
+
+	QColor northColor(Qt::white);
+	QColor southColor(127, 0, 0);
+	QColor azimuthColor(Qt::green);
 
 	int side = qMin(width(), height());
 
@@ -57,6 +73,19 @@ void Compass::paintEvent(QPaintEvent *)
 	painter.setRenderHint(QPainter::Antialiasing);
 	painter.translate(width() / 2, height() / 2);
 	painter.scale(side / 200.0, side / 200.0);
+
+	// make the background black
+	QRect r1(-100, -100, 200, 200);
+	QBrush br1(Qt::black);
+	painter.fillRect(r1, br1);
+
+	// Draw direction of motion pointer
+	painter.save();
+	painter.scale(2.0, 2.0);
+	painter.rotate(180.0);
+	painter.setPen(Qt::white);
+	painter.drawConvexPolygon(directionPointer, 12);
+	painter.restore();
 
 	// Draw north & south pointer
 	painter.setPen(Qt::NoPen);
@@ -81,26 +110,31 @@ void Compass::paintEvent(QPaintEvent *)
 		painter.drawConvexPolygon(azimuthPointer, 3);
 		painter.restore();
 	}
+
+	// Draw Labels N, E, S, W
+	static const QString labels[4]={
+		QString("N"),
+		QString("E"),
+		QString("S"),
+		QString("W")
+	};
+
+	painter.save();
+	QFont serifFont("Times", 6);
+	painter.setFont(serifFont);
+	painter.setPen(Qt::white);
+	QRect labelRect(-16, -100, 32, 32);
+	for(int i=0;i<4;i++){
+		painter.drawText(labelRect, Qt::AlignHCenter, labels[i]);
+		painter.rotate(90.0);
+	}
+
+	painter.restore();
 	painter.restore();
 
-	// Draw ticks
-	painter.setPen(Qt::white);
-
-	for (int i = 0; i < 4; ++i) {
-		painter.drawLine(88, 0, 96, 0);
-		painter.rotate(90.0);
-	}
-
-	painter.setPen(Qt::green);
-
-	painter.rotate(45.0);
-	for (int j = 0; j < 40; ++j) {
-		painter.drawLine(92, 0, 96, 0);
-		painter.rotate(90.0);
-	}
 	
 	// draw bezel
-	painter.setPen(Qt::black);
+	painter.setPen(Qt::white);
 	QRect center(-99, -99, 199, 199);
 	painter.drawEllipse(center);
 

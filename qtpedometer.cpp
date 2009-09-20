@@ -512,7 +512,7 @@ void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
 	// to North so we draw it relative to the North point of the
 	// compass
 	qreal az= update.coordinate().azimuthTo(way_point.coordinate());
-	qDebug("azimuth of waypoint= %6.2f", az);
+	//qDebug("azimuth of waypoint= %6.2f", az);
 	compass->setAzimuth(az);
 }
 
