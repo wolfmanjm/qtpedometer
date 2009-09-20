@@ -7,4 +7,4 @@ Comment[]=GPS based pedometer
 Exec=qtpedometer
 Type=Application
 Name[]=QtPedometer
- 
+Icon=qtpedometer/QtPedometer.png

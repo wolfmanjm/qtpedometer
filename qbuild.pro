@@ -42,3 +42,9 @@ desktop [
     path=/apps/Applications
 ]
 
+# Install some pictures.
+pics [
+    hint=pics
+    files=pics/*
+    path=/pics/qtpedometer
+]
