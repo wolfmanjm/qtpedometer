@@ -4,9 +4,9 @@
 
 Compass::Compass(QWidget *parent) : QWidget(parent)
 {
-	bearing= -45.0;
-	azimuth= 90.0;
-	show_azimuth= true;
+	bearing= 0.0;
+	azimuth= 0.0;
+	show_azimuth= false;
 }
 
 void Compass::setBearing(qreal pt)
@@ -44,7 +44,7 @@ void Compass::paintEvent(QPaintEvent *)
 	static const QPoint azimuthPointer[3] = {
 		QPoint(7, 0),
 		QPoint(-7, 0),
-		QPoint(0, -50)
+		QPoint(0, -70)
 	};
 
 	QColor northColor(127, 0, 0);
@@ -84,14 +84,14 @@ void Compass::paintEvent(QPaintEvent *)
 	painter.restore();
 
 	// Draw ticks
-	painter.setPen(northColor);
+	painter.setPen(Qt::white);
 
 	for (int i = 0; i < 4; ++i) {
 		painter.drawLine(88, 0, 96, 0);
 		painter.rotate(90.0);
 	}
 
-	painter.setPen(southColor);
+	painter.setPen(Qt::green);
 
 	painter.rotate(45.0);
 	for (int j = 0; j < 40; ++j) {

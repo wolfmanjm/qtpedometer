@@ -210,8 +210,12 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 			ui.altitude->setText(QString::number(update.coordinate().altitude() * METERS_TO_FEET, 'f', 3) + " ft"); // convert to feet
 	}
 
-	if(update.dataValidityFlags() & QWhereaboutsUpdate::Course)
-		ui.track->setText(QString::number(update.course(), 'f', 2) + QChar(0x00B0));   // degrees symbol
+	// set bearing
+	if(update.dataValidityFlags() & QWhereaboutsUpdate::Course){
+		ui.bearing->setText(QString::number(update.course(), 'f', 2) + QChar(0x00B0));   // degrees symbol
+		compass->setBearing(update.course());
+	}
+
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed){
 		if(use_metric)
 			ui.speed->setText(QString::number(update.groundSpeed(), 'f', 3) + " m/s");
@@ -453,12 +457,14 @@ void QtPedometer::setWayPoint()
 	ui.wayPtLatitude->setText(list.at(0));
 	ui.wayPtLongitude->setText(list.at(1));
 	way_point= current_update;
+	compass->showAzimuth(true);
 }
 void QtPedometer::clearWayPoint()
 {
 	ui.wayPtLatitude->clear();
 	ui.wayPtLongitude->clear();
 	way_point.clear();
+	compass->showAzimuth(false);
 }
 
 // This calcualtes and displays either the 2D distance or 3D distance
@@ -489,20 +495,12 @@ void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
 		ui.wayPointDistance->setText(QString::number(feet, 'f', 1) + (use_metric ? " m" : " ft"));
 	}
 
-	// where is the way point?
+	// where is the way point? This is the number of degrees relative
+	// to North so we draw it relative to the North point of the
+	// compass
 	qreal az= update.coordinate().azimuthTo(way_point.coordinate());
-	qreal bearing= update.course();
-
-	// TODO Ok now we have the azimuth which is the number of degrees
-	// from north that the waypoint is, we have to figure out what
-	// direction that is from the direction we are heading. So take
-	// our current bearing, and give that the Green arrow on the
-	// display is pointing in the direction we are going the red arrow
-	// will be the directin we need to go...  bearing - azimuth =
-	// offset in degrees -ive is clockwise +ive is counter clockwise
-	qreal pos= bearing - az;
-	if(pos < 0) pos += 360.0;
-	qDebug("azimuth of waypoint= %6.2fm bearing= %6.2f, pos= %6.2f", az, bearing, pos);
+	qDebug("azimuth of waypoint= %6.2f", az);
+	compass->setAzimuth(az);
 }
 
 #define PI 3.14159265

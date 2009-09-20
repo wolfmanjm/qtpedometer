@@ -14,7 +14,7 @@
    <item row="0" column="0" >
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_3" >
       <attribute name="title" >
@@ -165,7 +165,7 @@
        <item row="2" column="0" >
         <widget class="QLabel" name="label_10" >
          <property name="text" >
-          <string>Track</string>
+          <string>Bearing</string>
          </property>
          <property name="alignment" >
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -173,7 +173,7 @@
         </widget>
        </item>
        <item row="2" column="1" >
-        <widget class="QLineEdit" name="track" >
+        <widget class="QLineEdit" name="bearing" >
          <property name="readOnly" >
           <bool>true</bool>
          </property>
@@ -334,11 +334,11 @@
      </widget>
      <widget class="QWidget" name="tab_2" >
       <attribute name="title" >
-       <string>Track</string>
+       <string>Com</string>
       </attribute>
       <layout class="QGridLayout" >
        <item row="0" column="0" >
-        <widget class="QFrame" name="trackView" >
+        <widget class="QFrame" name="compassFrame" >
          <property name="sizePolicy" >
           <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
            <horstretch>0</horstretch>
@@ -421,20 +421,17 @@
         </layout>
        </item>
        <item>
-        <widget class="QFrame" name="compassFrame" >
-         <property name="sizePolicy" >
-          <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="frameShape" >
-          <enum>QFrame::StyledPanel</enum>
+         <property name="sizeHint" >
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
          </property>
-         <property name="frameShadow" >
-          <enum>QFrame::Raised</enum>
-         </property>
-        </widget>
+        </spacer>
        </item>
        <item>
         <layout class="QHBoxLayout" >
