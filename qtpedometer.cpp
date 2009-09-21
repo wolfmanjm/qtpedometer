@@ -340,16 +340,19 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 
 void QtPedometer::startData()
 {
-	int ret= QMessageBox::question(this, tr("Trip"),
-								   tr("Are you sure you want to start the trip?"),
-								   QMessageBox::Yes | QMessageBox::No);
-	if(ret == QMessageBox::Yes){
-		valid_update= false;
-		distance= 0.0;
-		running_time.start();
-		running= true;
-		ui.pauseButton->setText("Pause");
+	if(running){
+		int ret= QMessageBox::question(this, tr("Trip"),
+									   tr("Are you sure you want to restart the trip?"),
+									   QMessageBox::Yes | QMessageBox::No);
+		if(ret != QMessageBox::Yes)
+			return;
 	}
+
+	valid_update= false;
+	distance= 0.0;
+	running_time.start();
+	running= true;
+	ui.pauseButton->setText("Pause");
 }
 
 void QtPedometer::pauseData()

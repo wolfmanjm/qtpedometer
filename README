@@ -12,9 +12,11 @@ travelled for each sample. Sounds non-intuitive, but I'll give it a
 try.
 
 Looks like it is much more accurate, and means I don't have to mess
-with math to smooth out the points.
-However we need to set a threshold speed above which the trip distance is recorded.
-Tried setting a threshold but that seems to make it more inaccurate...
+with math to smooth out the points.  However we need to set a
+threshold speed above which the trip distance is recorded.  Tried
+setting a threshold but that seems to make it more inaccurate...  We
+are getting about 3% accuracy compared to measuring the distance of a
+2 mile walk on google maps.
 
 
 Set a way point, then show straight line 2D or 3D distance from that
@@ -56,3 +58,11 @@ Make trip data file configurable (currently hard coded to /media/card/trip.txt)
 Have an indication in compass window of whether it is accurate or not.
 
 Store waypoint so you can suspend, then restore and find your car.
+
+Another day another algorithm :) to improve distance accumulation...
+Have a settable radius (say 5 meters) which you have to move before
+accumulating distance. This distance needs to be greater than the
+postion jitter, but small enough that you could comfortably walk that
+distance in a given time.
+
+
