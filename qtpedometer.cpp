@@ -356,6 +356,7 @@ void QtPedometer::startData()
 	}
 
 	last_update.clear();
+	saved_update.clear();
 	distance= 0.0;
 	running_time.start();
 	running= true;
@@ -367,6 +368,7 @@ void QtPedometer::pauseData()
 	running= !running;
 	if(!running){
 		last_update.clear();
+		saved_update.clear();
 	}
 	ui.pauseButton->setText(running ? "Pause" : "Resume");
 }
@@ -382,6 +384,7 @@ void QtPedometer::resetData()
 		ui.distance->clear();
 		ui.runningTime->clear();
 		last_update.clear();
+		saved_update.clear();
 		running= false;
 		ui.pauseButton->setText("Pause");
 	}

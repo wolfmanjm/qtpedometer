@@ -76,7 +76,10 @@
       <item>
        <widget class="QLabel" name="label_3" >
         <property name="text" >
-         <string>Trip Sensitivity is the number of meters that has to be moved before the trip distance will record it</string>
+         <string>Trip Sensitivity is the number of meters that has to be moved before the trip distance will record it    </string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
         </property>
         <property name="wordWrap" >
          <bool>true</bool>
