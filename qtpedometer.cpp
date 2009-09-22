@@ -570,6 +570,7 @@ void QtPedometer::settings()
 	sui.metric->setChecked(use_metric);
 	sui.sensitivity->setValue(distance_sensitivity);
 
+	dlg->showMaximized();
 	if(dlg->exec() == QDialog::Accepted){
 		distance_sensitivity= sui.sensitivity->value();
 		bool flg= sui.metric->isChecked();
