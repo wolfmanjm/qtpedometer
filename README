@@ -53,8 +53,9 @@ useful for finding your car :)
 Added a settings screen where you can set the trip sensitivity, this
 sets a radius in meters (say 30 meters) which you have to move out of
 before accumulating distance, setting this above zero will use that
-method to accumulate distance, otherwise trip distance is calculated
-from GPS speed.
+method to accumulate distance, a good value is 30 meters, which
+improves accuracy to around 0.3%.  otherwise trip distance is
+calculated from GPS speed which seems to be around 3% accurate.
 
 
 TODO
@@ -66,8 +67,5 @@ Have an indication in compass window of whether it is accurate or not.
 
 Store waypoint so you can suspend, then restore and find your car.
 
-Another day another algorithm :) to improve distance accumulation...
-Have a settable radius (say 30 meters) which you have to move out
-of before accumulating distance.
 
 
