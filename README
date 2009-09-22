@@ -1,30 +1,6 @@
 This is a GPS based pedometer, written for QTMoko but should work on
 any QTExtended platform.
 
-It compiles and will show basic position and speed data for the GPS.
-Also have simplistic trip data, like ave speed, trip time and trip
-distance
-
-It turns out that the simplistic way of calculating distance travelled
-is way inaccurate.  One suggestion I read is to take the speed
-returned from the GPS, and use that to calculate the distabce
-travelled for each sample. Sounds non-intuitive, but I'll give it a
-try.
-
-Looks like it is much more accurate, and means I don't have to mess
-with math to smooth out the points.  However we need to set a
-threshold speed above which the trip distance is recorded.  Tried
-setting a threshold but that seems to make it more inaccurate...  We
-are getting about 3% accuracy compared to measuring the distance of a
-2 mile walk on google maps.
-
-
-Set a way point, then show straight line 2D or 3D distance from that
-point to the current postion
-
-turns off sleep mode while running.
-
-
 for debugging when you run from the command line you can add an argument...
 
 > qtpedometer gpsd [host:port]
@@ -37,25 +13,42 @@ also
 
 will run in simulation mode reading the NMEA data from the given file path.
 
-In the menu check metric then speed is in meters per sec and distance
-is in meters (or Km) otherwise if not checked distabce is in miles or
-feet, and speed in Miles per Hour. This setting is saved. Default is
-not metric.
 
-Added a compass screen, this shows where north is based on the
+Features
+========
+
+Shows basic position data in the Pos tab and speed and bearing data in
+the Dir tab.  The Trip tab shows the average speed, the distance
+travelled the elapsed time for the current trip. The trip is started
+but clicking the start button, and can be saved from the Menu.  You
+can select wheter the distance is shown in feet/meters or miles/Km
+depending on whether metric mode is selected or not.
+
+From the Menu settings can be selected, this allows the units to be
+metric or US. Also the Trip sensitivity can be sewt as explained below.
+
+The Com Tab shows a compass which shows where north is based on the
 freerunner pointing in the direction of motion, the compass needle is
-red for north and green for south, you need to be moving for it to be
-accurate.  There is also a blue arrow when a waypoint is set, this
-shows the direction from north the waypoint is, if you are moving and
-follow the blue arrow you may eventually reach the waypoint. This is
-useful for finding your car :)
+white for north and red for south, you need to be moving for it to be
+accurate.  
 
-Added a settings screen where you can set the trip sensitivity, this
-sets a radius in meters (say 30 meters) which you have to move out of
-before accumulating distance, setting this above zero will use that
-method to accumulate distance, a good value is 30 meters, which
-improves accuracy to around 0.3%.  otherwise trip distance is
-calculated from GPS speed which seems to be around 3% accurate.
+There is also a blue arrow when a waypoint is set, this shows the
+direction from north the waypoint is, if you are moving and follow the
+blue arrow you may eventually reach the waypoint. This is useful for
+finding your car :)
+
+The Way pt Tab allows you to set a way point, and if set shows you the
+current distance to the way point, if it is set the Compass will also
+show the direction to the way point.
+
+The settings screen allows you to set the trip sensitivity, this sets
+a distance in meters which you have to move before accumulating trip
+distance, setting this above zero will use this method to accumulate
+distance, ie adding every 30 meter segment. a good value is 30 meters,
+which improves accuracy to around 0.3%.  
+
+If the setting is 0 then trip distance is calculated from GPS speed
+which seems to be less accurate.
 
 
 TODO
