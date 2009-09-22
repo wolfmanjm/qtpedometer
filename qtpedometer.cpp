@@ -348,15 +348,13 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 void QtPedometer::startData()
 {
 	if(running){
-		int ret= QMessageBox::question(this, tr("Trip"),
-									   tr("Are you sure you want to restart the trip?"),
-									   QMessageBox::Yes | QMessageBox::No);
-		if(ret != QMessageBox::Yes)
+		if(!resetData())
 			return;
 	}
 
 	last_update.clear();
 	saved_update.clear();
+	ui.partial->clear();
 	distance= 0.0;
 	running_time.start();
 	running= true;
@@ -373,7 +371,7 @@ void QtPedometer::pauseData()
 	ui.pauseButton->setText(running ? "Pause" : "Resume");
 }
 
-void QtPedometer::resetData()
+bool QtPedometer::resetData()
 {
 	int ret= QMessageBox::question(this, tr("Trip"),
 								   tr("Are you sure you want to reset the trip?"),
@@ -383,12 +381,14 @@ void QtPedometer::resetData()
 		ui.aveSpeed->clear();
 		ui.distance->clear();
 		ui.runningTime->clear();
+		ui.partial->clear();
 		last_update.clear();
 		saved_update.clear();
 		running= false;
 		ui.pauseButton->setText("Pause");
+		return true;
 	}
-
+	return false;
 }
 
 

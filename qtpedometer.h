@@ -18,7 +18,7 @@ class QtPedometer : public QWidget
 	private slots:
 		void updated(const QWhereaboutsUpdate &update);
 		void stateChanged(QWhereabouts::State state);
-		void resetData();
+		bool resetData();
 		void startData();
 		void pauseData();
 		void saveTrip();
