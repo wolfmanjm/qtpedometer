@@ -19,7 +19,8 @@ pkg [
 
 # Input files
 FORMS=\
-    qtpedometer.ui
+    qtpedometer.ui\
+    settings.ui
 
 HEADERS=\
     qtpedometer.h\

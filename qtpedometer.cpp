@@ -16,8 +16,10 @@
 #include <QCloseEvent>
 #include <QTextStream>
 
-#include "qtpedometer.h"
 #include <math.h>
+
+#include "qtpedometer.h"
+#include "ui_settings.h"
 
 #define METERS_TO_FEET 3.2808399            /* Meters to U.S./British feet */
 #define METERS_TO_MILES 0.000621371192      /* Meters to U.S./British feet */
@@ -39,15 +41,16 @@ QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 	// get settings
 	QSettings settings("e4Networks", "Pedometer");
 	use_metric= settings.value("metric", false).toBool();
-	setMetricUi();
-	speed_threshold= settings.value("threshold", 0.1788159993648455703).toDouble();
+	setMetric(use_metric);
+	speed_threshold= settings.value("threshold", 0.18).toDouble(); // M/S
+	distance_sensitivity= settings.value("sensitivity", 0).toInt(); // Meters
+	qDebug("speed_threshold= %6.2f m/s, distance_sensitivity= %d m", speed_threshold, distance_sensitivity);
 
 	hidden= true;
 	whereabouts= NULL;
-	valid_update= false;
 	running= false;
-	speed_threshold= 0.1788159993648455703; // MPS = 0.4 MPH
-	thresh_cnt= 0;
+	last_update.clear();
+	saved_update.clear();
 	createMenus();
 	init();
 }
@@ -70,26 +73,16 @@ void QtPedometer::createMenus()
     connect(saveAct, SIGNAL(triggered()), this, SLOT(saveTrip()));
 	contextMenu->addAction(saveAct);
     contextMenu->addSeparator();
-    metricAct= new QAction(tr("Metric"), this);
-	metricAct->setCheckable(true);
-	metricAct->setChecked(use_metric);
-    connect(metricAct, SIGNAL(triggered()), this, SLOT(setMetric()));
-	contextMenu->addAction(metricAct);
+	QAction *settingsAct= new QAction(tr("Settings..."), this);
+    connect(settingsAct, SIGNAL(triggered()), this, SLOT(settings()));
+	contextMenu->addAction(settingsAct);
 }
 
-// action caused by checking the Menu item
-void QtPedometer::setMetric()
+// Setup all Ui related to metric vs non-metric units
+void QtPedometer::setMetric(bool set)
 {
-	use_metric= metricAct->isChecked();
+	use_metric= set;
 	qDebug("set use metric to: %s", use_metric?"true":"false");
-	QSettings settings("e4Networks", "Pedometer");
-	settings.setValue("metric", use_metric);
-	setMetricUi();
-}
-
-// called to sync up all Ui elements relating to metric
-void QtPedometer::setMetricUi()
-{
 	ui.feetButton->setText(use_metric ? "m" : "ft");
 	ui.wayMilesCheck->setText(use_metric ? "Km" : "miles");
 }
@@ -149,10 +142,8 @@ void QtPedometer::init()
         return;
     }
 
-	connect(whereabouts, SIGNAL(updated(QWhereaboutsUpdate)),
-			SLOT(updated(QWhereaboutsUpdate)));
-	connect(whereabouts, SIGNAL(stateChanged(QWhereabouts::State)),
-            SLOT(stateChanged(QWhereabouts::State)));
+	connect(whereabouts, SIGNAL(updated(QWhereaboutsUpdate)), SLOT(updated(QWhereaboutsUpdate)));
+	connect(whereabouts, SIGNAL(stateChanged(QWhereabouts::State)), SLOT(stateChanged(QWhereabouts::State)));
 
 	connect(ui.resetButton, SIGNAL(clicked()), this, SLOT(resetData()));
 	connect(ui.pauseButton, SIGNAL(clicked()), this, SLOT(pauseData()));
@@ -162,7 +153,6 @@ void QtPedometer::init()
  	
 	whereabouts->setUpdateInterval(1000); // update every second
 	whereabouts->startUpdates();
-
 }
 
 void QtPedometer::stateChanged(QWhereabouts::State state)
@@ -242,7 +232,6 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 
 	// mostly for debugging
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::HorizontalAccuracy){
-		horiz_accuracy=  update.horizontalAccuracy();
 		qDebug("Horizontal Accuracy: %10.6f", update.horizontalAccuracy());
 	}
 
@@ -250,7 +239,6 @@ void QtPedometer::updated(const QWhereaboutsUpdate &update)
 		qDebug("Vertical Accuracy:  %10.6f", update.verticalAccuracy());
 	
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeedAccuracy){
-		speed_accuracy=  update.groundSpeedAccuracy();
 		qDebug("Ground Speed Accuracy:  %10.6f m/s", update.groundSpeedAccuracy());
 	}
 	
@@ -275,50 +263,69 @@ void QtPedometer::calculateTrip(const QWhereaboutsUpdate &update)
 	int secs= (ms/1000) % 60;
 	snprintf(str, sizeof(str), "%02d:%02d:%02d", hrs, mins, secs);
 	ui.runningTime->setText(str);
-	qDebug("Update time: %s", (const char *)update.updateTime().toString().toAscii());
+	int delta= 0;
+	//qDebug("Update time: %s", (const char *)update.updateTime().toString().toAscii());
+	if(!last_update.isNull()){
+		if(saved_update.isNull())
+		   saved_update= last_update;
 
-	// calculate trip distance covered I read that this may be more
-	// accurate, get the speed calculated from the GPS, and use it to
-	// determine the distance covered since the last speed update
-	if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed){
-		// get measured speed
-		qreal speed= update.groundSpeed();
-		qDebug("speed= %10.6f m/s", speed);
+		// We use on of two methods to accumulate trip distance
+		// 1. is to wait until a certain distance has been travelled then add that to the distance
+		// 2. is to use the current speed over the ground returned by the GPS and multiply that by the time
+		//
+		// if distance_sensitivity is > 0 then we use 1. else we use 2.
 
-		bool valid_speed= true;
-		// if we are going less than the threshold for 10 consecutive
-		// samples then presume we are not moving
-		if(speed < speed_threshold){
-			if(thresh_cnt++ > 10){
-				// we have been stationary for 10 samples so
-				// accumulate zero speed
-				speed= 0.0;
-			}else{
-				// don't update last_update so if we get a valid speed
-				// within 10 samples we accumulate it correctly
-				valid_speed= false;
-			}
-		}else
-			thresh_cnt= 0;
+		if(distance_sensitivity > 0){ // meters from last saved point
+			// if we have travelled more than distance_sensitivity
+			// meters then accumulate that distance
 
-		if(valid_speed){
-			// get elapsed time
+			// get elapsed time since last sampling period
+			QTime last= saved_update.updateTime();
 			QTime t= update.updateTime();
-			if(valid_update){
-				// calculate distance travelled
+			delta= last.msecsTo(t);
+			
+			// get distance from last sample period, however long it takes
+			qreal dist= saved_update.coordinate().distanceTo(update.coordinate());
+			qDebug("delta time= %d ms, dist= %10.6f m", delta, dist);
+			if(dist > distance_sensitivity){
+				distance += dist;
+				qDebug("1: cur dist: %10.6f, total: %10.6f", dist, distance);
+				saved_update= update;
+				ui.partial->clear();
+			}else{
+				// display the partial distance, (ie the unaccumulated part)
+				qreal d= dist * (use_metric ? 1.0 : METERS_TO_FEET);
+				ui.partial->setText(QString::number(d, 'f', 1) + (use_metric ? " m" : " ft"));		
+			}
+				
+		}else{ 
+			// get the speed calculated from the GPS, and use it to
+			// determine the distance covered since the last valid speed update
+			if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed){
+				// get elapsed time since last update
 				QTime last= last_update.updateTime();
-				int delta= last.msecsTo(t);
-				qDebug("delta= %d ms", delta);
+				QTime t= update.updateTime();
+				delta= last.msecsTo(t);
+
+				// get measured speed
+				qreal speed= update.groundSpeed();
+				qDebug("delta time= %d ms, speed= %10.6f m.s", delta, speed);
+
+				// if we are going less than the speed threshold then presume
+				// we are not moving
+				if(speed < speed_threshold){
+					speed= 0.0;
+				}
+
+				// calculate distance travelled
 				qreal d= speed * (delta/1000.0);
 				distance += d;
-				qDebug("distance: %10.6f, %10.6f", d, distance);
-			}else{
-				valid_update= true;
+				qDebug("2: cur dist: %10.6f, total: %10.6f", d, distance);
 			}
-			last_update= update;
 		}
 	}
-
+	last_update= update;
+	
 	// display miles or feet, or meters or kilometers
 	if(ui.feetButton->isChecked()){
 		// display decimal meters or feet
@@ -348,7 +355,7 @@ void QtPedometer::startData()
 			return;
 	}
 
-	valid_update= false;
+	last_update.clear();
 	distance= 0.0;
 	running_time.start();
 	running= true;
@@ -359,7 +366,7 @@ void QtPedometer::pauseData()
 {
 	running= !running;
 	if(!running){
-		valid_update= false;
+		last_update.clear();
 	}
 	ui.pauseButton->setText(running ? "Pause" : "Resume");
 }
@@ -374,7 +381,7 @@ void QtPedometer::resetData()
 		ui.aveSpeed->clear();
 		ui.distance->clear();
 		ui.runningTime->clear();
-		valid_update= false;
+		last_update.clear();
 		running= false;
 		ui.pauseButton->setText("Pause");
 	}
@@ -439,9 +446,10 @@ void QtPedometer::saveTrip()
 	out << "Date: " << now.toString(Qt::ISODate) << endl;
 	out << "Elapsed time: " << ui.runningTime->text() << endl;
 	out << "Distance: " << ui.distance->text() << endl;
+	if(!ui.partial->text().isEmpty()){
+		out << "Partial: " << ui.partial->text() << endl;
+	}
 	out << "Speed: " << ui.aveSpeed->text() << endl;
-	out << "Speed Accuracy: " << speed_accuracy << endl;
-	out << "Horiz Accuracy: " << horiz_accuracy << endl;
 	out << "=====================" << endl;
 
 	//QApplication::restoreOverrideCursor();
@@ -470,6 +478,7 @@ void QtPedometer::setWayPoint()
 	way_point= current_update;
 	compass->showAzimuth(true);
 }
+
 void QtPedometer::clearWayPoint()
 {
 	int ret= QMessageBox::question(this, tr("Way Point"),
@@ -488,26 +497,26 @@ void QtPedometer::clearWayPoint()
 // It also calculates the direction to the waypoint from the current position
 void QtPedometer::calculateWayPoint(const QWhereaboutsUpdate &update)
 {
-	qreal distance= 0.0;
+	qreal dist= 0.0;
 	if(ui.twoDCheck->isChecked() 
 	   || update.coordinate().type() != QWhereaboutsCoordinate::Coordinate3D
 	   || way_point.coordinate().type() != QWhereaboutsCoordinate::Coordinate3D)
 	{
 		ui.twoDCheck->setChecked(true);
 		// calculate 2D distance ignoring altitude
-		distance= way_point.coordinate().distanceTo(update.coordinate());
+		dist= way_point.coordinate().distanceTo(update.coordinate());
 	}else{
 		// calculate 3D distance
-		distance= distance3d(way_point.coordinate(), update.coordinate());
+		dist= distance3d(way_point.coordinate(), update.coordinate());
 	}
 
 	if(ui.wayMilesCheck->isChecked()){
 		// display decimal miles or Km
-		qreal m= distance * (use_metric ? 0.001 : METERS_TO_MILES);
+		qreal m= dist * (use_metric ? 0.001 : METERS_TO_MILES);
 		ui.wayPointDistance->setText(QString::number(m, 'f', 4) + (use_metric ? " Km" : " mi"));
 	}else{
 		// display decimal feet or meters
-		qreal feet= distance * (use_metric ? 1.0 : METERS_TO_FEET);
+		qreal feet= dist * (use_metric ? 1.0 : METERS_TO_FEET);
 		ui.wayPointDistance->setText(QString::number(feet, 'f', 1) + (use_metric ? " m" : " ft"));
 	}
 
@@ -548,4 +557,25 @@ qreal QtPedometer::distance3d(const QWhereaboutsCoordinate& from, const QWhereab
 	double dist= sqrt( pow((x1-x0), 2) + pow((y1-y0), 2) + pow((z1-z0), 2) );
 
 	return (qreal)dist;
+}
+
+void QtPedometer::settings()
+{
+	Ui::settingsDlg sui;
+	QDialog *dlg= new QDialog(this);
+	sui.setupUi(dlg);
+	sui.metric->setChecked(use_metric);
+	sui.sensitivity->setValue(distance_sensitivity);
+
+	if(dlg->exec() == QDialog::Accepted){
+		distance_sensitivity= sui.sensitivity->value();
+		bool flg= sui.metric->isChecked();
+		setMetric(flg);
+		
+		// save the settings
+		QSettings settings("e4Networks", "Pedometer");
+		settings.setValue("metric", flg);
+		settings.setValue("sensitivity", distance_sensitivity);
+	}
+	delete dlg;
 }
