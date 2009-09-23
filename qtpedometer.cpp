@@ -72,7 +72,11 @@ void QtPedometer::createMenus()
     QAction *saveAct= new QAction(tr("Save Trip"), this);
     connect(saveAct, SIGNAL(triggered()), this, SLOT(saveTrip()));
 	contextMenu->addAction(saveAct);
-    contextMenu->addSeparator();
+	QAction *restoreAct= new QAction(tr("Restore waypoint"), this);
+    connect(restoreAct, SIGNAL(triggered()), this, SLOT(restoreWayPoint()));
+	contextMenu->addAction(restoreAct);
+	
+	contextMenu->addSeparator();
 	QAction *settingsAct= new QAction(tr("Settings..."), this);
     connect(settingsAct, SIGNAL(triggered()), this, SLOT(settings()));
 	contextMenu->addAction(settingsAct);
@@ -480,6 +484,11 @@ void QtPedometer::setWayPoint()
 	ui.wayPtLongitude->setText(list.at(1));
 	way_point= current_update;
 	compass->showAzimuth(true);
+	
+	// save the waypoint
+	QSettings settings("e4Networks", "Pedometer");
+	settings.setValue("waypoint/lat", current_update.coordinate().latitude());
+	settings.setValue("waypoint/long", current_update.coordinate().longitude());
 }
 
 void QtPedometer::clearWayPoint()
@@ -493,6 +502,32 @@ void QtPedometer::clearWayPoint()
 		way_point.clear();
 		compass->showAzimuth(false);
 	}
+}
+
+void QtPedometer::restoreWayPoint()
+{
+	if(!way_point.isNull()){
+		int ret= QMessageBox::question(this, tr("Way Point"),
+									   tr("Are you sure you want to restore the waypoint?"),
+									   QMessageBox::Yes | QMessageBox::No);
+		if(ret != QMessageBox::Yes)
+			return;
+	}
+	QSettings settings("e4Networks", "Pedometer");
+	double lat= settings.value("waypoint/lat").toDouble();
+	double longit= settings.value("waypoint/long").toDouble();
+
+	QWhereaboutsCoordinate coord(lat, longit);
+	QWhereaboutsUpdate upd(coord, QDateTime::currentDateTime());
+	way_point= upd;
+
+	QString pos= coord.toString(QWhereaboutsCoordinate::DegreesMinutesSecondsWithHemisphere);
+	qDebug("restored waypoint to: %10.6f, %10.6f, %s", lat, longit, (const char *)pos.toAscii());
+
+	QStringList list= pos.split(",");
+	ui.wayPtLatitude->setText(list.at(0));
+	ui.wayPtLongitude->setText(list.at(1));
+	compass->showAzimuth(true);
 }
 
 // This calculates and displays either the 2D distance or 3D distance

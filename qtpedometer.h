@@ -24,6 +24,7 @@ class QtPedometer : public QWidget
 		void saveTrip();
 		void setWayPoint();
 		void clearWayPoint();
+		void restoreWayPoint();
 		void settings();
 
 	protected:
