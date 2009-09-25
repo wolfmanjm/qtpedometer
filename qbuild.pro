@@ -13,7 +13,7 @@ pkg [
     name=qtpedometer
     desc="A GPS based pedometer"
     license=GPL
-    version=1.0
+    version=1.1
     maintainer="Jim Morris <morris@wolfman.com>"
 ]
 
