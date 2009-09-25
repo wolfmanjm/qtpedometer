@@ -43,7 +43,7 @@ QtPedometer::QtPedometer(QWidget *parent, Qt::WFlags f) :  QWidget(parent, f)
 	use_metric= settings.value("metric", false).toBool();
 	setMetric(use_metric);
 	speed_threshold= settings.value("threshold", 0.18).toDouble(); // M/S
-	distance_sensitivity= settings.value("sensitivity", 0).toInt(); // Meters
+	distance_sensitivity= settings.value("sensitivity", 30).toInt(); // Meters
 	qDebug("speed_threshold= %6.2f m/s, distance_sensitivity= %d m", speed_threshold, distance_sensitivity);
 
 	hidden= true;
