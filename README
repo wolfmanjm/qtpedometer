@@ -45,11 +45,13 @@ The settings screen allows you to set the trip sensitivity, this sets
 a distance in meters which you have to move before accumulating trip
 distance, setting this above zero will use this method to accumulate
 distance, ie adding every 30 meter segment. a good value is 30 meters,
-which improves accuracy to around 0.3%.  
+which improves accuracy to around 1% on a 2 mile walk.  
 
 If the setting is 0 then trip distance is calculated from GPS speed
 which seems to be less accurate.
 
+Added a Store/Restore waypoint to the menu so you can suspend, then
+restore and find your car.
 
 TODO
 ====
@@ -58,7 +60,6 @@ Make trip data file configurable (currently hard coded to /media/card/trip.txt)
 
 Have an indication in compass window of whether it is accurate or not.
 
-Store waypoint so you can suspend, then restore and find your car.
-
+Don;t allow set waypoint if no fix available
 
 

@@ -3,6 +3,7 @@ TARGET=qtpedometer
 
 CONFIG+=qtopia
 QTOPIA*=whereabouts
+DEFINES+=QT_NO_DEBUG_OUTPUT
 
 # I18n info
 STRING_LANGUAGE=en_US
