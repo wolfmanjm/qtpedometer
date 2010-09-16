@@ -3,16 +3,24 @@ any QTExtended platform.
 
 for debugging when you run from the command line you can add an argument...
 
-> qtpedometer gpsd [host:port]
+    > qtpedometer gpsd [host:port]
 
 to use gpsd at the given host and port, the default is to use localhost
 
 also
 
-> qtpedometer sim [filepath]
+    > qtpedometer sim [filepath]
 
 will run in simulation mode reading the NMEA data from the given file path.
 
+Before building the package I found that I had to do this...
+
+    > cd build/sdk
+    > ln -s ../sdk sdk
+
+In order to not get the following error...
+
+	You must run configure before you can run mkpkg
 
 Features
 ========
@@ -60,6 +68,6 @@ Make trip data file configurable (currently hard coded to /media/card/trip.txt)
 
 Have an indication in compass window of whether it is accurate or not.
 
-Don;t allow set waypoint if no fix available
+Don't allow set waypoint if no fix available
 
 
